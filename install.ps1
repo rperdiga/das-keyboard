@@ -93,8 +93,10 @@ if ($StartupColor -or $StartupMap) {
 
     $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
     $trigger.Delay = 'PT5S'
-    $action = New-ScheduledTaskAction -Execute 'powershell.exe' `
-        -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$watchScript`" $watchArgs"
+    # Launch through a headless conhost. Windows Terminal (the Windows 11 default console host) ignores
+    # -WindowStyle Hidden and would pop a terminal window for the watcher at every logon and task restart.
+    $action = New-ScheduledTaskAction -Execute "$env:SystemRoot\System32\conhost.exe" `
+        -Argument "--headless powershell.exe -NoProfile -ExecutionPolicy Bypass -File `"$watchScript`" $watchArgs"
     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
         -ExecutionTimeLimit (New-TimeSpan -Seconds 0) -MultipleInstances IgnoreNew `
         -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
