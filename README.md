@@ -37,16 +37,23 @@ If PowerShell refuses to run scripts, launch it with the policy bypassed for tha
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
-### Keep a color after reboot
+### Keep a color after reboot, replug, or KVM switch
 
-The keyboard forgets its color whenever it loses power. To reapply one automatically at every
-sign-in, register the logon task:
+The keyboard forgets its color whenever it loses USB power, which includes every switch on a KVM.
+Register the startup task and it stays set:
 
 ```powershell
 .\install.ps1 -StartupColor yellow
 ```
 
-Run it again with a different color to change it, or `.\install.ps1 -RemoveStartupTask` to stop.
+This creates a logon task named "Das Keyboard Startup Color" that runs `scripts\Watch-DasKeyboard.ps1`
+hidden in the background. The watcher applies the color at sign-in, then sleeps until Windows reports a
+device arrival, checks that the keyboard is back, and applies it again. It does not poll and uses no
+CPU while idle. It is the only piece that stays running; nothing is installed.
+
+Run it again with a different color to change it, use `-StartupMap my-layout.json` for a multi-color
+layout, or `.\install.ps1 -RemoveStartupTask` to stop. The watcher writes a short log to
+`%LOCALAPPDATA%\das-keyboard\watch.log` if you need to see what it did.
 
 ## Use from Claude Code
 

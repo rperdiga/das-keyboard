@@ -57,12 +57,14 @@ vim"). Translate that into keys and groups yourself; do not ask them for key IDs
 
 ## Things worth knowing
 
-- **Colors do not survive a power cycle.** The keyboard reverts to its built-in default on reboot or
-  replug. The repo's `install.ps1 -StartupColor <color>` registers a logon scheduled task named
-  "Das Keyboard Startup Color" that reapplies one color at every sign-in. To change the startup color,
-  run `install.ps1 -StartupColor <new color>` again (it replaces the task) rather than creating another
-  task by hand. `install.ps1 -RemoveStartupTask` removes it. For a multi-color startup layout, edit the
-  task's action to pass `-Map` with a saved JSON file.
+- **Colors do not survive a power cycle.** The keyboard reverts to its built-in default whenever it
+  loses USB power: reboot, replug, and every KVM switch. The repo's `install.ps1 -StartupColor <color>`
+  (or `-StartupMap <layout.json>`) registers a logon scheduled task named "Das Keyboard Startup Color"
+  that runs `scripts/Watch-DasKeyboard.ps1`, a hidden idle watcher that applies the color at sign-in and
+  again each time the keyboard reconnects. To change the startup color or layout, run `install.ps1`
+  again with the new value (it replaces and restarts the task); `install.ps1 -RemoveStartupTask`
+  removes it. If the user says the color is lost after a KVM switch or replug, check whether that task
+  exists and is Running (`Get-ScheduledTask`), and look at `%LOCALAPPDATA%\das-keyboard\watch.log`.
 - **There is no brightness command.** Dim by choosing a darker color (`808000` is half-brightness
   yellow, `dim` is a faint gray).
 - **Effects are per key.** `-Mode Breathing -Keys fkeys` makes only the F-keys breathe; everything
